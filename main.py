@@ -5,8 +5,8 @@ import time
 
 def url(uid, offset_id=0):
     return "https://api.vc.bilibili.com/dynamic_svr/v1/" + \
-           "dynamic_svr/space_history?host_uid=" + \
-           "{}&offset_dynamic_id={}&need_top=1&platform=web".format(uid, offset_id)
+           "dynamic_svr/space_history?host_uid={}&" + \
+           "offset_dynamic_id={}&need_top=1&platform=web".format(uid, offset_id)
 
 
 def get_bless_info(bless_id):
