@@ -58,17 +58,36 @@ while res.text != over_text:
                         is_cj = 1
                 except KeyError:
                     print('这个转发的视频')
+                    continue
             except KeyError:
                 print("此动态无原产地信息(非转发)")
             if is_cj == 1:
+                ntime = time.time()
+                ntime = int(ntime)
+                dtime = 2592000   #一周
                 orig_dy_id = card_js['item']['orig_dy_id']
                 print("检查到抽奖动态" + str(dy_id) + ' orig_id:', orig_dy_id)
                 bltime = get_bless_time(orig_dy_id)
                 if bltime == -1:
-                    print("动态", dy_id, '抽奖错误，请手动排除。已经跳过')
+                    put_timestamp = card_js['item']['timestamp']
+                    print(card_js)
+                    try:
+                        origin = card_js['origin']
+                        origin_js = json.loads(origin)
+                        res = origin_js['item']
+                        print("动态", dy_id, '非标准抽奖。动态文本如下:', origin_js['item']['description'])
+                    except KeyError:
+                        print("获取转发动态文本失败", dy_id)
+                    if put_timestamp + dtime > ntime:
+                        print('一月前非标准抽奖，执行删除')
+                        cookie = {'_uuid': config['_uuid'],
+                                  'SESSDATA': config['SESSDATA']}
+                        podata = {'dynamic_id': dy_id}
+                        print(requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
+                                            data=podata,
+                                            cookies=cookie).text)
                     continue
-                ntime = time.time()
-                ntime = int(ntime)
+
                 if ntime < bltime:
                     print('未开奖，不删除', dy_id, ' 当前时间', ntime, ' 开奖时间为', bltime)
                 else:
