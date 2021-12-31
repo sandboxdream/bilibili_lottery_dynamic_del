@@ -5,8 +5,8 @@ import time
 
 def url(uid, offset_id=0):
     return "https://api.vc.bilibili.com/dynamic_svr/v1/" + \
-           "dynamic_svr/space_history?host_uid={}&" + \
-           "offset_dynamic_id={}&need_top=1&platform=web".format(uid, offset_id)
+           "dynamic_svr/space_history?host_uid=" + \
+           "{}&offset_dynamic_id={}&need_top=1&platform=web".format(uid, offset_id)
 
 
 def get_bless_info(bless_id):
@@ -37,6 +37,7 @@ deled_number = 0
 res = requests.get(url(config['uid']))
 while res.text != over_text:
     data = json.loads(res.text)
+    print(data)
     data_list = data['data']['cards']
     for data1 in data_list:  # 在获取的列表中循环每个动态
         time.sleep(1)
