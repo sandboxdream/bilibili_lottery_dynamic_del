@@ -64,7 +64,7 @@ while res.text != over_text:
             if is_cj == 1:
                 ntime = time.time()
                 ntime = int(ntime)
-                dtime = 2592000   #一周
+                dtime = 2592000  # 一周
                 orig_dy_id = card_js['item']['orig_dy_id']
                 print("检查到抽奖动态" + str(dy_id) + ' orig_id:', orig_dy_id)
                 bltime = get_bless_time(orig_dy_id)
@@ -110,8 +110,6 @@ while res.text != over_text:
             print(requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
                                 data=podata,
                                 cookies=cookie).text)
-
-
 
     nextoffid = data['data']['next_offset']
     res = requests.get(url(config['uid'], nextoffid))
