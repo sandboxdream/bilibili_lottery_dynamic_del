@@ -67,9 +67,9 @@ over_text = '{"code":0,"msg":"","message":"","data":{"has_more":0,"next_offset":
 if __name__ == '__main__':
     config = load_config()
     deled_number = load_delnumbers()
-    res = requests.get(url(config['uid']))
     cookie = {'_uuid': config['_uuid'],
               'SESSDATA': config['SESSDATA']}
+    res = requests.get(url(config['uid']))
     while res.text != over_text:
         data = json.loads(res.text)
         print(data)
