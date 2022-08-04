@@ -1,6 +1,8 @@
-import requests
 import json
 import time
+
+import pyqrcode
+import requests
 
 
 def timestamp_convert_localdate(timestamp, time_format="%Y/%m/%d %H:%M:%S"):
@@ -62,13 +64,79 @@ def save_delnum(d_num):
         f.write(svars)
 
 
+def login_qrcode():
+    while True:
+        r = requests.get('http://passport.bilibili.com/qrcode/getLoginUrl')
+        req = json.loads(r.text)
+        qrcodeurl = req['data']['url']
+        oauthKey = req['data']['oauthKey']
+        img = pyqrcode.create(qrcodeurl)
+        print('已获取二维码，下面将展示二维码，扫描后请关闭二维码。')
+        time.sleep(5)
+        img.show()
+        time.sleep(5)
+        logindata = {'oauthKey': oauthKey}
+        while True:
+            time.sleep(1)
+            r = requests.post('http://passport.bilibili.com/qrcode/getLoginInfo', data=logindata)
+            loginres = json.loads(r.text)
+            if loginres['data'] == -1:
+                print('出现错误')
+                break
+            elif loginres['data'] == -2:
+                print('二维码已超时，重新获取二维码')
+                time.sleep(1.5)
+                break
+            elif loginres['data'] == -4:
+                print('二维码未扫描，等待扫码')
+                time.sleep(0.5)
+            elif loginres['data'] == -5:
+                print('已扫码，等待确认,如点按取消登录请重新扫码')
+                time.sleep(0.5)
+            else:
+                print('扫码成功')
+                time.sleep(1)
+                cookies = r.cookies.items()
+                uid = cookies[0][1]
+                SESSDATA = cookies[2][1]
+                csrf = cookies[4][1]
+                time.sleep(1)
+                del req, qrcodeurl, oauthKey, r, logindata, loginres
+                return uid, SESSDATA, csrf
+
+        del req, qrcodeurl, oauthKey, r, logindata, loginres
+
+
 over_text = '{"code":0,"msg":"","message":"","data":{"has_more":0,"next_offset":0,"_gt_":0}}'
 
 if __name__ == '__main__':
     config = load_config()
     deled_number = load_delnumbers()
-    cookie = {'_uuid': config['_uuid'],
-              'SESSDATA': config['SESSDATA']}
+    if config['SESSDATA'] == "" or config['bili_jct'] == "":
+        print('无用户信息，执行自动登录')
+        while True:
+            loginway = input("请输入登录方式:\n1.二维码扫码登录（推荐）\n2.手机验证码登录（需进行机器人验证）\n"
+                             "3.账号密码登录（需进行机器人验证）（不推荐）"
+                             "\n请选择登录方式并输入前的序号:")
+            if loginway == '1':
+                qruid, qrSESSDATA, qrcsrf = login_qrcode()
+                config['SESSDATA'] = qrSESSDATA
+                config['uid'] = qruid
+                config['bili_jct'] = qrcsrf
+                del qruid, qrSESSDATA, qrcsrf
+                cookie = {'SESSDATA': config['SESSDATA'], 'bili_jct': config['bili_jct']}
+                print('登录成功！\n\n')
+                break
+            elif loginway == '2':
+                print('暂未开发，请选择其他登录方式')
+                # break
+            elif loginway == '3':
+                print('暂未开发，请选择其他登录方式')
+                # break
+            else:
+                print('错误的输入，请输入登录方式前的序号')
+    else:
+        cookie = {'SESSDATA': config['SESSDATA'], 'bili_jct': config['bili_jct']}
     res = requests.get(url(config['uid']))
     while res.text != over_text:
         data = json.loads(res.text)
