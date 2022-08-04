@@ -13,6 +13,8 @@
 git clone https://github.com/sandboxdream/bilibili_lottery_dynamic_del.git
 ```
 
+将`config_template.json`重命名为`config.json`
+
 在config.json中修改配置:
 
 uid填写为b站uid(纯数字)
