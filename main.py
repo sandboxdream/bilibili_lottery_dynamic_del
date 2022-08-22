@@ -108,7 +108,7 @@ def login_qrcode():
 
 def post_del_message(dynamicid, cookies):
     postdata = {"dyn_id_str":dynamicid}
-    return print(requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
+    return print(requests.post('https://api.bilibili.com/x/dynamic/feed/operate/remove',
                                     data=podata,
                                     cookies=cookies).text)
 
