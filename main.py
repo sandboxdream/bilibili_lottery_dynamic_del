@@ -106,6 +106,12 @@ def login_qrcode():
 
         del req, qrcodeurl, oauthKey, r, logindata, loginres
 
+def post_del_message(dynamicid, cookies):
+    postdata = {"dyn_id_str":dynamicid}
+    return print(requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
+                                    data=podata,
+                                    cookies=cookies).text)
+
 
 over_text = '{"code":0,"msg":"","message":"","data":{"has_more":0,"next_offset":0,"_gt_":0}}'
 
@@ -188,10 +194,7 @@ if __name__ == '__main__':
                             print("获取转发动态文本失败", dy_id)
                         if put_timestamp + dtime > ntime:
                             print('一月前非标准抽奖，执行删除')
-                            podata = {'dynamic_id': dy_id}
-                            print(requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
-                                                data=podata,
-                                                cookies=cookie).text)
+                            print(post_del_message(dy_id, cookie).text)
                         continue
 
                     if ntime < bltime:
@@ -199,21 +202,14 @@ if __name__ == '__main__':
                         print('未开奖，不删除', dy_id, ' 当前时间', ntime, ' 开奖时间为', bltime)
                     else:
                         print('已开奖，发送删除请求', dy_id, ' 当前时间', ntime, ' 开奖时间为', bltime)
-                        podata = {'dynamic_id': dy_id}
-                        print(requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
-                                            data=podata,
-                                            cookies=cookie).text)
+                        print(post_del_message(dy_id, cookie).text)
                         deled_number = deled_number + 1
                         print('已删除', deled_number, '个')
                         save_delnum(deled_number)
             else:
                 print('全部删除模式，即将删除', dy_id)
                 time.sleep(1)
-                podata = {'dynamic_id': dy_id}
-
-                print(requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
-                                    data=podata,
-                                    cookies=cookie).text)
+                print(post_del_message(dy_id, cookie).text)
                 deled_number = deled_number + 1
                 print('已删除', deled_number, '个')
                 save_delnum(deled_number)
