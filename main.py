@@ -31,7 +31,7 @@ def get_del_url(name):
 
 
 def get_bless_time(bless_id):
-    bres = requests.get(get_bless_info(bless_id))
+    bres = requests.get(get_bless_info(bless_id), headers=HEADERS)
     jsb = json.loads(bres.text)
     print(jsb)
     try:
@@ -71,7 +71,7 @@ def save_delnum(d_num):
 
 def login_qrcode():
     while True:
-        r = requests.get('http://passport.bilibili.com/qrcode/getLoginUrl')
+        r = requests.get('http://passport.bilibili.com/qrcode/getLoginUrl', headers=HEADERS)
         req = json.loads(r.text)
         qrcodeurl = req['data']['url']
         oauthKey = req['data']['oauthKey']
@@ -83,7 +83,7 @@ def login_qrcode():
         logindata = {'oauthKey': oauthKey}
         while True:
             time.sleep(1)
-            r = requests.post('http://passport.bilibili.com/qrcode/getLoginInfo', data=logindata)
+            r = requests.post('http://passport.bilibili.com/qrcode/getLoginInfo', data=logindata, headers=HEADERS)
             loginres = json.loads(r.text)
             if loginres['data'] == -1:
                 print('出现错误')
@@ -117,7 +117,8 @@ def post_del_message(dynamicid, cookies):
     del_nynamic_data = {"dyn_id_str": dynamicid}
     return requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
                          data=del_nynamic_data,
-                         cookies=cookies)
+                         cookies=cookies,
+                         headers=HEADERS)
 
 
 if __name__ == '__main__':
@@ -152,7 +153,7 @@ if __name__ == '__main__':
     # else:
     #     cookie = {'SESSDATA': config['SESSDATA'], 'bili_jct': config['bili_jct']}
     cookie = {'SESSDATA': config['SESSDATA'], '_uuid': config['_uuid'], 'bili_jct': config['bili_jct']}
-    res = requests.get(url(config['uid']))
+    res = requests.get(url(config['uid']), headers=HEADERS)
     while res.text != over_text:
         data = json.loads(res.text)
         print(data)
@@ -223,6 +224,6 @@ if __name__ == '__main__':
                 print('已删除', deled_number, '个')
                 save_delnum(deled_number)
         nextoffid = data['data']['next_offset']
-        res = requests.get(url(config['uid'], nextoffid))
+        res = requests.get(url(config['uid'], nextoffid), headers=HEADERS)
         print('加载下一页 下一页id为', nextoffid)
     print('查询已经结束，删除完成')
