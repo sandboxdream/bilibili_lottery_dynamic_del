@@ -4,6 +4,11 @@ import time
 import pyqrcode
 import requests
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/104.0.0.0 Safari/537.36'}
+over_text = '{"code":0,"msg":"","message":"","data":{"has_more":0,"next_offset":0,"_gt_":0}}'
+
 
 def timestamp_convert_localdate(timestamp, time_format="%Y/%m/%d %H:%M:%S"):
     timeArray = time.localtime(timestamp)
@@ -100,49 +105,53 @@ def login_qrcode():
                 uid = cookies[0][1]
                 SESSDATA = cookies[2][1]
                 csrf = cookies[4][1]
+                uuid = ''
                 time.sleep(1)
                 del req, qrcodeurl, oauthKey, r, logindata, loginres
-                return uid, SESSDATA, csrf
+                return uid, SESSDATA, csrf, uuid
 
         del req, qrcodeurl, oauthKey, r, logindata, loginres
 
+
 def post_del_message(dynamicid, cookies):
-    postdata = {"dyn_id_str":dynamicid}
-    return print(requests.post('https://api.bilibili.com/x/dynamic/feed/operate/remove?csrf={}'.format(cookies['bili_jct']),
-                                    data=podata,
-                                    cookies=cookies).text)
+    del_nynamic_data = {"dyn_id_str": dynamicid}
+    return requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
+                         data=del_nynamic_data,
+                         cookies=cookies)
 
-
-over_text = '{"code":0,"msg":"","message":"","data":{"has_more":0,"next_offset":0,"_gt_":0}}'
 
 if __name__ == '__main__':
+    remin = requests.get('https://www.bilibili.com/', headers=HEADERS)
     config = load_config()
     deled_number = load_delnumbers()
-    if config['SESSDATA'] == "" or config['bili_jct'] == "":
-        print('无用户信息，执行自动登录')
-        while True:
-            loginway = input("请输入登录方式:\n1.二维码扫码登录（推荐）\n2.手机验证码登录（需进行机器人验证）\n"
-                             "3.账号密码登录（需进行机器人验证）（不推荐）"
-                             "\n请选择登录方式并输入前的序号:")
-            if loginway == '1':
-                qruid, qrSESSDATA, qrcsrf = login_qrcode()
-                config['SESSDATA'] = qrSESSDATA
-                config['uid'] = qruid
-                config['bili_jct'] = qrcsrf
-                del qruid, qrSESSDATA, qrcsrf
-                cookie = {'SESSDATA': config['SESSDATA'], 'bili_jct': config['bili_jct']}
-                print('登录成功！\n\n')
-                break
-            elif loginway == '2':
-                print('暂未开发，请选择其他登录方式')
-                # break
-            elif loginway == '3':
-                print('暂未开发，请选择其他登录方式')
-                # break
-            else:
-                print('错误的输入，请输入登录方式前的序号')
-    else:
-        cookie = {'SESSDATA': config['SESSDATA'], 'bili_jct': config['bili_jct']}
+    if config['SESSDATA'] == "" or config['bili_jct'] == "" or config['_uuid'] == "" or config['uid'] == 0:
+        print('无用户信息或用户信息不完整，程序退出')
+        exit()
+    #     while True:
+    #         loginway = input("请输入登录方式:\n1.二维码扫码登录（推荐）\n2.手机验证码登录（需进行机器人验证）\n"
+    #                          "3.账号密码登录（需进行机器人验证）（不推荐）"
+    #                          "\n请选择登录方式并输入前的序号:")
+    #         if loginway == '1':
+    #             qruid, qrSESSDATA, qrcsrf, uuid = login_qrcode()
+    #             config['SESSDATA'] = qrSESSDATA
+    #             config['uid'] = qruid
+    #             config['bili_jct'] = qrcsrf
+    #             config['_uuid'] = uuid
+    #             del qruid, qrSESSDATA, qrcsrf
+    #             cookie = {'SESSDATA': config['SESSDATA'], 'bili_jct': config['bili_jct']}
+    #             print('登录成功！\n\n')
+    #             break
+    #         elif loginway == '2':
+    #             print('暂未开发，请选择其他登录方式')
+    #             # break
+    #         elif loginway == '3':
+    #             print('暂未开发，请选择其他登录方式')
+    #             # break
+    #         else:
+    #             print('错误的输入，请输入登录方式前的序号')
+    # else:
+    #     cookie = {'SESSDATA': config['SESSDATA'], 'bili_jct': config['bili_jct']}
+    cookie = {'SESSDATA': config['SESSDATA'], '_uuid': config['_uuid'], 'bili_jct': config['bili_jct']}
     res = requests.get(url(config['uid']))
     while res.text != over_text:
         data = json.loads(res.text)
