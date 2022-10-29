@@ -8,6 +8,7 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                   'Chrome/104.0.0.0 Safari/537.36'}
 over_text = '{"code":0,"msg":"","message":"","data":{"has_more":0,"next_offset":0,"_gt_":0}}'
+success_text = '{"code":0,"message":"0","ttl":1,"data":{}}'
 
 
 def timestamp_convert_localdate(timestamp, time_format="%Y/%m/%d %H:%M:%S"):
@@ -27,7 +28,8 @@ def get_bless_info(bless_id):
 
 
 def get_del_url(name):
-    return 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic?csrf={}'.format(name)
+    # return 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic?csrf={}'.format(name)疑似过时接口
+    return 'https://api.bilibili.com/x/dynamic/feed/operate/remove?csrf={}'.format(name)
 
 
 def get_bless_time(bless_id):
@@ -115,10 +117,14 @@ def login_qrcode():
 
 def post_del_message(dynamicid, cookies):
     del_nynamic_data = {"dyn_id_str": dynamicid}
-    return requests.post('https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic',
-                         data=del_nynamic_data,
-                         cookies=cookies,
-                         headers=HEADERS)
+    re = requests.post(get_del_url(cookies['bili_jct']),
+                       data=del_nynamic_data,
+                       cookies=cookies,
+                       headers=HEADERS)
+    print(re.text)
+    if re.text == success_text:
+        return '删除成功'
+    return '删除失败'
 
 
 if __name__ == '__main__':
@@ -204,7 +210,7 @@ if __name__ == '__main__':
                             print("获取转发动态文本失败", dy_id)
                         if put_timestamp + dtime > ntime:
                             print('一月前非标准抽奖，执行删除')
-                            print(post_del_message(dy_id, cookie).text)
+                            print(post_del_message(dy_id, cookie))
                         continue
 
                     if ntime < bltime:
@@ -212,14 +218,14 @@ if __name__ == '__main__':
                         print('未开奖，不删除', dy_id, ' 当前时间', ntime, ' 开奖时间为', bltime)
                     else:
                         print('已开奖，发送删除请求', dy_id, ' 当前时间', ntime, ' 开奖时间为', bltime)
-                        print(post_del_message(dy_id, cookie).text)
+                        print(post_del_message(dy_id, cookie))
                         deled_number = deled_number + 1
                         print('已删除', deled_number, '个')
                         save_delnum(deled_number)
             else:
                 print('全部删除模式，即将删除', dy_id)
                 time.sleep(1)
-                print(post_del_message(dy_id, cookie).text)
+                print(post_del_message(dy_id, cookie))
                 deled_number = deled_number + 1
                 print('已删除', deled_number, '个')
                 save_delnum(deled_number)
